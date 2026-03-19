@@ -1,0 +1,136 @@
+<!-- Backdrop & Scroll Container -->
+<div id="new-modal-container" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm" onclick="closeNewModal(event)">
+    <!-- Modal Content: Compact & Scrollable -->
+    <div class="relative bg-white rounded-[1.5rem] shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden transform transition-all border border-slate-200" onclick="event.stopPropagation()">
+        
+        <!-- Header: Minimal & Dark -->
+        <div class="bg-[#1E293B] py-5 px-8 flex justify-between items-center text-white shrink-0">
+            <div class="flex items-center space-x-3">
+                <span class="bg-blue-600 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest leading-none">Nuevo</span>
+                <h3 class="text-lg font-bold tracking-tight">Datos del registro</h3>
+            </div>
+            <button onclick="closeNewModal()" class="text-slate-400 hover:text-white transition-all p-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+
+        <!-- Form Area: Scrollable with proper visibility -->
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar bg-white">
+            <form id="new-record-form" hx-post="/libros/{{ libro.id }}/nuevo" hx-target="body" class="space-y-5">
+                <!-- Row 1: Dates -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Fecha de carga</label>
+                        <div class="w-full px-4 py-2.5 rounded-xl bg-slate-50 text-slate-400 font-normal text-sm border border-slate-100 italic">
+                            {{ today.strftime('%d / %m / %Y') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Fecha de la clase</label>
+                        <input type="date" name="fecha_clase" value="{{ today.isoformat() }}" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm text-slate-700 font-medium">
+                    </div>
+                </div>
+
+                <!-- Row 2: Teacher & DNI -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Docente</label>
+                        <div class="w-full px-4 py-2.5 rounded-xl bg-slate-50 text-slate-400 font-normal text-sm border border-slate-100 truncate">
+                            {{ user.apellido|upper }}, {{ user.nombre }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-1.5 ml-1">DNI</label>
+                        <div class="w-full px-4 py-2.5 rounded-xl bg-slate-50 text-slate-600 font-semibold text-sm border border-slate-200 text-center">
+                            {{ user.dni_raw or 'Falta Token' }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Curricular Space -->
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Espacio Curricular</label>
+                    <div class="w-full px-4 py-2.5 rounded-xl bg-slate-50 text-slate-400 font-normal text-sm border border-slate-100">
+                        {{ libro.materia.curso.anio }}° - {{ libro.materia.nombre }}
+                    </div>
+                </div>
+
+                <div class="h-px bg-slate-100 w-full my-2"></div>
+
+                <!-- Main Inputs -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Contenidos / Tema *</label>
+                        <textarea name="contenidos" rows="3" required placeholder="Escriba aquí..."
+                            class="w-full px-5 py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 outline-none transition-all text-sm text-slate-700 font-medium resize-none leading-relaxed shadow-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Propuesta / Actividades *</label>
+                        <textarea name="actividades" rows="3" required placeholder="Escriba aquí..."
+                            class="w-full px-5 py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 outline-none transition-all text-sm text-slate-700 font-medium resize-none leading-relaxed shadow-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Observaciones *</label>
+                        <textarea name="observaciones" rows="2" required placeholder="Notas..."
+                            class="w-full px-5 py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 outline-none transition-all text-sm text-slate-700 font-medium resize-none leading-relaxed shadow-sm"></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer: Fixed -->
+        <div class="p-6 bg-slate-50 border-t border-slate-100 flex space-x-3 shrink-0">
+            <button type="button" onclick="closeNewModal()" 
+                class="flex-1 py-3.5 bg-white text-slate-400 text-xs font-semibold uppercase tracking-widest rounded-xl border border-slate-200 hover:bg-slate-100 transition-all active:scale-95 leading-none shadow-sm">
+                Descartar
+            </button>
+            <button type="submit" form="new-record-form"
+                class="flex-1 py-3.5 bg-[#0F172A] text-white text-xs font-semibold uppercase tracking-widest rounded-xl hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all active:scale-95 leading-none">
+                Guardar registro
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 10px;
+        border: 2px solid #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #94a3b8;
+    }
+</style>
+
+<script>
+    function closeNewModal(event) {
+        if (!event || event.target.id === 'new-modal-container') {
+            const el = document.getElementById('new-modal-container');
+            if (el) el.remove();
+        }
+    }
+    
+    document.addEventListener('keydown', function(evt) {
+        if (evt.key === 'Escape') {
+            const el = document.getElementById('new-modal-container');
+            if (el) el.remove();
+        }
+    });
+
+    // Fix for potential layout issues on load
+    setTimeout(() => {
+        const modal = document.querySelector('#new-modal-container > div');
+        if (modal) modal.style.opacity = '1';
+    }, 10);
+</script>

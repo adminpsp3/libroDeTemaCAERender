@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Libros - Libro de Temas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 500; }
+        .font-bold, .font-black, .font-extrabold { font-family: 'Poppins', sans-serif; }
+        .card-animate:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-slate-100 p-4 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <h1 class="text-xl font-bold text-slate-900 tracking-tight">Libro de Temas Digital</h1>
+            </div>
+            
+            <div class="flex items-center space-x-6">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-bold text-slate-800 tracking-tight">
+                        {{ user.apellido|upper }}, {{ user.nombre }}
+                    </p>
+                    <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">
+                        {{ user.rol }}
+                    </p>
+                </div>
+                <a href="/logout" class="px-4 py-2 bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-widest rounded-lg border border-slate-100 hover:bg-rose-50 hover:text-rose-600 transition-all active:scale-95 shadow-sm">
+                    Salir
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto py-12 px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-semibold text-slate-800 mb-3">
+                {% if user.rol in ['admin', 'autoridad'] %}
+                Libros de Tema disponibles
+                {% else %}
+                Mis Libros de Tema disponibles
+                {% endif %}
+            </h2>
+            <p class="text-slate-500">
+                {% if user.rol in ['admin', 'autoridad'] %}
+                Supervisión general de todos los registros cargados en el sistema.
+                {% else %}
+                Selecciona un libro para ver o cargar registros de clases.
+                {% endif %}
+            </p>
+        </div>
+
+        {% if libros %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for libro in libros %}
+            <div class="bg-white border border-slate-200 rounded-md p-6 shadow-sm hover:shadow-md transition-all cursor-pointer card-animate group"
+                 onclick="window.location.href='/libros/{{ libro.id }}'">
+                <div class="flex flex-col h-full">
+                    <div class="mb-4">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Materia</span>
+                        <h3 class="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{{ libro.materia.nombre }}</h3>
+                        <p class="text-xs text-slate-400 font-medium mt-1">ID: {{ libro.materia.id }}</p>
+                        
+                        {% if user.rol in ['admin', 'autoridad'] %}
+                        <div class="mt-4">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Profesor/a</span>
+                            <p class="text-sm font-semibold text-slate-700">{{ libro.docente.apellido|upper }}, {{ libro.docente.nombre }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-auto pt-4 border-t border-slate-50 flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Curso</span>
+                            <p class="text-sm font-semibold text-slate-700">{{ libro.materia.curso.anio }}° "{{ libro.materia.curso.division }}"</p>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                            <svg class="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty State matching your image -->
+        <div class="bg-white border border-slate-100 rounded-2xl p-20 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.02)] flex flex-col items-center justify-center text-center">
+            <div class="w-20 h-20 bg-slate-50 rounded-xl flex items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-slate-800 mb-2">No tienes libros asignados</h3>
+            <p class="text-slate-400">Contacta a la administración de tu institución.</p>
+        </div>
+        {% endif %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Libro de Temas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F3F4F6] min-h-screen">
+    <nav class="bg-[#1e1b4b] text-white p-4 shadow-lg">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <img src="https://escuelacae.edu.ar/wp-content/uploads/2017/11/Escudo_Esc_CAE.png" alt="CAE" class="h-10 w-auto brightness-0 invert">
+                <h1 class="text-xl font-bold">Panel de Administración</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <span class="text-sm opacity-80 font-medium">Admin: {{ user.nombre }}</span>
+                <a href="/logout" title="Cerrar sesión" class="flex items-center justify-center bg-white/10 hover:bg-white/20 w-10 h-10 rounded-full transition-all border border-white/10 shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <main class="max-w-6xl mx-auto mt-10 p-4">
+        <div class="bg-white p-12 rounded-[2rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] border border-gray-100">
+            <h2 class="text-2xl font-semibold mb-4 text-[#111827]">Panel de Administración</h2>
+            <p class="text-gray-600">Gestión global del sistema.</p>
+        </div>
+    </main>
+</body>
+</html>

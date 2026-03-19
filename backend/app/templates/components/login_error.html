@@ -1,0 +1,9 @@
+<div id="error-message" class="mt-4 text-red-500 text-sm text-center">
+    {{ error if error else "Usuario no válido" }}
+</div>
+<script>
+    // Re-enable button on error
+    document.getElementById('submit-button').disabled = false;
+    document.getElementById('button-text').innerText = 'Ingresar al sistema';
+    document.getElementById('spinner').classList.add('hidden');
+</script>

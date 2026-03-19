@@ -1,0 +1,16 @@
+# Entornos virtuales
+venv/
+env/
+.env
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Directorios de IDEs (Opcional)
+.vscode/
+.idea/
+
+# Base de datos local si tuvieras una
+*.db

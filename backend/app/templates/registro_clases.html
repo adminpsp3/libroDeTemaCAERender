@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de clases - Libro de Temas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 500; }
+        .font-bold, .font-black, .font-extrabold { font-family: 'Poppins', sans-serif; font-weight: 600; }
+        
+        /* High quality print improvements */
+        @media print {
+            .no-pdf { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] min-h-screen">
+    <div id="top-anchor"></div>
+    <!-- Navbar (Same as dashboard/libros_docente for consistency) -->
+    <nav id="top" class="bg-white border-b border-slate-100 p-4 shadow-sm sticky top-0 z-50 no-pdf">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">Libro de Temas Digital</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-6">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-bold text-slate-800 tracking-tight">
+                        {{ user.apellido|upper }}, {{ user.nombre }}
+                    </p>
+                    <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">
+                        {{ user.rol }}
+                    </p>
+                </div>
+                <a href="/logout" class="px-4 py-2 bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-widest rounded-lg border border-slate-100 hover:bg-rose-50 hover:text-rose-600 transition-all active:scale-95 shadow-sm">
+                    Salir
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto py-12 px-4">
+        <!-- Sub-header -->
+        <div class="text-center mb-10">
+            <h2 class="text-4xl font-extrabold text-blue-600 tracking-tight mb-2">Registro de clases</h2>
+            <p class="text-xl font-semibold text-slate-600">{{ libro.materia.curso.anio }}° "{{ libro.materia.curso.division }}" - {{ libro.materia.nombre }}</p>
+            <div class="mt-4 flex justify-center items-center space-x-2">
+                <span class="h-px w-8 bg-slate-200"></span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">{{ registros|length }} registros cargados</span>
+                <span class="h-px w-8 bg-slate-200"></span>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-12 space-y-4 sm:space-y-0 no-pdf">
+            <a href="/libros/docente" class="flex items-center space-x-2 px-6 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:border-blue-400 hover:text-blue-600 transition-all font-bold text-sm shadow-sm active:scale-95">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                <span>Volver</span>
+            </a>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Circular Buttons with improved style -->
+                <!-- Jump to Bottom Button -->
+                <a href="#bottom" title="Ir al final" class="w-11 h-11 bg-purple-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-purple-200 hover:scale-110 active:scale-95 transition-all scroll-smooth">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7" /></svg>
+                </a>
+                
+                {% if user.rol == 'docente' %}
+                <a href="/dashboard" title="Ver Dashboard" class="w-11 h-11 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-orange-200 hover:scale-110 active:scale-95 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                </a>
+                {% endif %}
+                {% if user.rol == 'docente' %}
+                <button 
+                    title="Nueva Clase" 
+                    hx-get="/libros/{{ libro.id }}/nuevo"
+                    hx-target="#modal-container"
+                    class="w-11 h-11 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 hover:scale-110 active:scale-110 transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                </button>
+                {% endif %}
+                <button 
+                    onclick="exportToPDF()"
+                    title="Exportar a PDF" 
+                    {% if not registros and user.rol == 'docente' %}
+                    disabled
+                    class="w-11 h-11 bg-slate-200 text-slate-400 rounded-full flex items-center justify-center cursor-not-allowed opacity-50"
+                    {% else %}
+                    class="w-11 h-11 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-200 hover:scale-110 active:scale-95 transition-all"
+                    {% endif %}>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </button>
+                
+                {% if user.rol == 'docente' %}
+                <button 
+                    title="Borrar todos los registros" 
+                    {% if not registros %}
+                    disabled
+                    class="w-11 h-11 bg-slate-200 text-slate-400 rounded-full flex items-center justify-center cursor-not-allowed opacity-50"
+                    {% else %}
+                    onclick="openDeleteAllModal('{{ libro.id }}')"
+                    class="w-11 h-11 bg-rose-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-rose-200 hover:scale-110 active:scale-95 transition-all"
+                    {% endif %}>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Class Records List -->
+        <div class="space-y-10">
+            {% for registro in registros %}
+            <div class="bg-white border border-slate-100 rounded-lg overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.04)] hover:shadow-xl hover:shadow-slate-500/5 transition-all" id="registro-{{ registro.id }}">
+                <!-- Header of the record with Grey Gradient -->
+                <div class="bg-gradient-to-r from-slate-700 to-slate-900 py-5 px-8 flex justify-between items-center text-white">
+                    <div class="flex items-center space-x-8">
+                        <div class="bg-white/10 backdrop-blur-sm px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest border border-white/10 shadow-sm">
+                            Clase {{ loop.revindex }}
+                        </div>
+                        <div>
+                            <p class="font-extrabold text-xl leading-tight capitalize tracking-tight">{{ registro.dia_semana }}</p>
+                            <p class="text-[11px] font-bold text-blue-100 uppercase tracking-widest opacity-80 mt-1">
+                                {% if registro.fecha_clase %}
+                                    {{ registro.fecha_clase.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                    --/--/----
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% if user.rol == 'docente' %}
+                    <div class="flex items-center space-x-2 no-pdf">
+                        <!-- Edit Button -->
+                        <button 
+                            hx-get="/libros/registro/{{ registro.id }}/edit" 
+                            hx-target="#modal-container" 
+                            class="bg-white/10 hover:bg-blue-500 text-white rounded-lg p-2.5 transition-all shadow-sm active:scale-90"
+                            title="Editar registro"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                        <!-- Delete Button -->
+                        <button 
+                            onclick="openDeleteModal('{{ registro.id }}')"
+                            class="bg-white/10 hover:bg-rose-500 text-white rounded-lg p-2.5 transition-all shadow-sm active:scale-90"
+                            title="Eliminar registro"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Body of the record -->
+                <div class="p-10 space-y-10">
+                    <div>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="w-1.5 h-1.5 bg-slate-600 rounded-full"></span>
+                            <h4 class="text-[13px] font-black text-slate-500 uppercase tracking-[0.2em]">Contenidos / Tema</h4>
+                        </div>
+                        <p class="text-slate-700 text-lg font-medium leading-relaxed tracking-tight">{{ registro.contenidos }}</p>
+                    </div>
+
+                    <div class="pt-8 border-t border-slate-50">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
+                            <h4 class="text-[13px] font-black text-slate-500 uppercase tracking-[0.2em]">Propuesta / Actividades</h4>
+                        </div>
+                        <p class="text-slate-700 text-lg font-medium leading-relaxed tracking-tight">{{ registro.actividades or 'Sin actividades registradas' }}</p>
+                    </div>
+
+                    {% if registro.observaciones %}
+                    <div class="pt-8 border-t border-slate-50">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="w-1.5 h-1.5 bg-orange-400 rounded-full"></span>
+                            <h4 class="text-[13px] font-black text-slate-500 uppercase tracking-[0.2em]">Observaciones</h4>
+                        </div>
+                        <p class="text-slate-500 italic text-base leading-relaxed">{{ registro.observaciones }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% if not registros %}
+            <!-- Visual Empty State -->
+            <div class="bg-white border border-slate-100 rounded-[2.5rem] p-24 text-center shadow-[0_20px_50px_-20px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center">
+                <div class="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-8">
+                    <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+                <h3 class="text-3xl font-bold text-slate-900 mb-3 tracking-tighter">Aún no hay registros</h3>
+                <p class="text-slate-500 text-lg mb-10 max-w-sm mx-auto leading-relaxed">
+                    {% if user.rol == 'docente' %}
+                    Comienza a cargar la actividad diaria de tus clases haciendo clic en el botón verde <span class="inline-flex items-center justify-center w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full font-black text-xs ml-1">+</span>
+                    {% else %}
+                    No se han cargado actividades en este libro de temas todavía.
+                    {% endif %}
+                </p>
+                {% if user.rol == 'docente' %}
+                <div class="flex flex-col items-center space-y-2 opacity-50">
+                    <div class="animate-bounce">
+                        <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7" />
+                        </svg>
+                    </div>
+                    <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest">Subir para agregar</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Back to Top Section -->
+        <div id="bottom" class="mt-20 mb-10 flex flex-col items-center justify-center space-y-4 no-pdf">
+            <div class="h-px w-full bg-slate-100 mb-8"></div>
+            <a href="#top-anchor" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" title="Volver al inicio" class="w-14 h-14 bg-slate-800 text-white rounded-full flex items-center justify-center shadow-2xl shadow-slate-400 hover:scale-110 active:scale-95 transition-all group cursor-pointer no-underline">
+                <svg class="w-6 h-6 transform group-hover:-translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 11l7-7m0 0l7 7m-7-7v18" />
+                </svg>
+            </a>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Volver al inicio</p>
+        </div>
+    </main>
+
+    <!-- Hidden Report Template (Server-rendered for reliability) -->
+    <div id="formal-report" style="display: none;">
+        <div style="width: 210mm; background: white; padding: 25mm 20mm; font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b;">
+            <div style="text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px;">
+                <h1 style="font-size: 24pt; font-weight: 800; text-transform: uppercase; margin: 0; color: #0f172a;">Libro de Temas Digital</h1>
+                <h2 style="font-size: 14pt; font-weight: 600; margin-top: 5px; color: #64748b; text-transform: uppercase;">Reporte Oficial de Registros de Clase</h2>
+            </div>
+            
+            <div style="display: flex; flex-direction: row; justify-content: space-between; margin-bottom: 30px; font-size: 11pt; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
+                <div style="width: 50%;">
+                    <p style="margin: 4px 0;">MATERIA: <strong style="color: #0f172a;">{{ libro.materia.nombre }}</strong></p>
+                    <p style="margin: 4px 0;">CURSO: <strong style="color: #0f172a;">{{ libro.materia.curso.anio }}° "{{ libro.materia.curso.division }}"</strong></p>
+                </div>
+                <div style="width: 50%; text-align: right;">
+                    <p style="margin: 4px 0;">DOCENTE: <strong style="color: #0f172a;">{{ user.apellido|upper }}, {{ user.nombre }}</strong></p>
+                    <p style="margin: 4px 0;">FECHA EMISIÓN: <strong style="color: #0f172a;">{{ today.strftime('%d/%m/%Y') if today else '--/--/----' }}</strong></p>
+                </div>
+            </div>
+            
+            <table style="width: 100%; border-collapse: collapse; font-size: 9pt; table-layout: fixed;">
+                <thead>
+                    <tr style="background-color: #f1f5f9;">
+                        <th style="border: 0.5pt solid #cbd5e1; padding: 8pt 4pt; text-align: center; width: 30pt;">#</th>
+                        <th style="border: 0.5pt solid #cbd5e1; padding: 8pt 4pt; text-align: left; width: 60pt;">FECHA</th>
+                        <th style="border: 0.5pt solid #cbd5e1; padding: 8pt 4pt; text-align: left;">TEMAS / CONTENIDOS / ACTIVIDADES</th>
+                        <th style="border: 0.5pt solid #cbd5e1; padding: 8pt 4pt; text-align: left; width: 100pt;">OBSERVACIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for registro in registros|reverse %}
+                    <tr>
+                        <td style="border: 0.5pt solid #e2e8f0; padding: 8pt 4pt; vertical-align: top; text-align: center;">{{ loop.index }}</td>
+                        <td style="border: 0.5pt solid #e2e8f0; padding: 8pt 4pt; vertical-align: top;">{{ registro.fecha_clase.strftime('%d/%m/%Y') if registro.fecha_clase else '--/--/----' }}</td>
+                        <td style="border: 0.5pt solid #e2e8f0; padding: 8pt 4pt; vertical-align: top;">
+                            <div style="margin: 0; font-weight: 700; color: #0f172a;">{{ registro.contenidos }}</div>
+                            <div style="margin: 4pt 0 0 0; color: #475569; font-size: 8pt;">{{ registro.actividades or '-' }}</div>
+                        </td>
+                        <td style="border: 0.5pt solid #e2e8f0; padding: 8pt 4pt; vertical-align: top; font-style: italic; color: #64748b;">{{ registro.observaciones or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div style="margin-top: 40pt; border-top: 1px solid #f1f5f9; padding-top: 20px; font-size: 8pt; color: #94a3b8; text-transform: uppercase;">
+                Reporte generado íntegramente por sistema digital - Libro de Temas Digital
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container for Edit -->
+    <div id="modal-container"></div>
+
+    <!-- Modal de Confirmación -->
+    <div id="delete-modal" class="fixed inset-0 z-[100] hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"></div>
+        
+        <!-- Modal Content -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm p-6">
+            <div class="bg-white rounded-3xl shadow-2xl p-8 transform transition-all border border-slate-100">
+                <h3 class="text-2xl font-bold text-slate-800 mb-3 tracking-tight">¿Eliminar registro?</h3>
+                <p class="text-slate-500 mb-8 leading-relaxed text-[15px]">
+                    Esta acción no se puede deshacer. ¿Confirma más que quieres eliminar este registro?
+                </p>
+                
+                <div class="flex space-x-4">
+                    <button onclick="closeDeleteModal()" class="flex-1 py-3.5 border border-blue-200 text-blue-500 font-bold rounded-xl hover:bg-blue-50 transition-all active:scale-95 text-sm">
+                        Cancelar
+                    </button>
+                    <button id="confirm-delete-btn" class="flex-1 py-3.5 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 shadow-lg shadow-rose-200 transition-all active:scale-95 text-sm">
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación Borrar Todo -->
+    <div id="delete-all-modal" class="fixed inset-0 z-[110] hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeDeleteAllModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm p-6">
+            <div class="bg-white rounded-3xl shadow-2xl p-8 transform transition-all border border-slate-100">
+                <h3 class="text-2xl font-bold text-slate-800 mb-3 tracking-tight">¿Eliminar todo?</h3>
+                <p class="text-slate-500 mb-8 leading-relaxed text-[15px]">
+                    Esta acción no se puede deshacer. ¿Confirma que quiere eliminar <b>todos los registros</b> de este libro?
+                </p>
+                
+                <div class="flex space-x-4">
+                    <button onclick="closeDeleteAllModal()" class="flex-1 py-3.5 border border-blue-200 text-blue-500 font-bold rounded-xl hover:bg-blue-50 transition-all active:scale-95 text-sm">
+                        Cancelar
+                    </button>
+                    <button id="confirm-delete-all-btn" class="flex-1 py-3.5 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 shadow-lg shadow-rose-200 transition-all active:scale-95 text-sm">
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openDeleteAllModal(libroId) {
+            const modal = document.getElementById('delete-all-modal');
+            const btn = document.getElementById('confirm-delete-all-btn');
+            modal.classList.remove('hidden');
+            btn.setAttribute('hx-delete', `/libros/${libroId}/delete_all`);
+            htmx.process(btn);
+        }
+
+        function closeDeleteAllModal() {
+            document.getElementById('delete-all-modal').classList.add('hidden');
+        }
+
+        function openDeleteModal(id) {
+            const modal = document.getElementById('delete-modal');
+            const btn = document.getElementById('confirm-delete-btn');
+            
+            modal.classList.remove('hidden');
+            
+            // Set HTMX attributes dynamically
+            btn.setAttribute('hx-delete', `/libros/registro/${id}`);
+            btn.setAttribute('hx-target', `#registro-${id}`);
+            btn.setAttribute('hx-swap', 'outerHTML');
+            
+            // Re-process the button so HTMX recognizes the new attributes
+            htmx.process(btn);
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.add('hidden');
+        }
+
+        // Close modal after successful HTMX delete
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            if (evt.detail.successful && evt.detail.elt.id === 'confirm-delete-btn') {
+                closeDeleteModal();
+            }
+        });
+
+        // Close modal on escape key
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeDeleteModal();
+            }
+        });
+
+        function exportToPDF() {
+            const btn = document.querySelector('[title="Exportar a PDF"]');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+            btn.disabled = true;
+
+            // 1. Prepare the clone
+            const target = document.getElementById('formal-report');
+            const clone = target.firstElementChild.cloneNode(true);
+            
+            // 2. Create a temporary container that is "visible" to html2canvas but hidden from user
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.left = '0';
+            container.style.top = '0';
+            container.style.width = '100%';
+            container.style.zIndex = '-9999';
+            container.style.opacity = '0.01';
+            container.style.pointerEvents = 'none';
+            container.style.backgroundColor = 'white';
+            container.appendChild(clone);
+            document.body.appendChild(container);
+
+            const libroNombre = "Reporte_{{ libro.materia.curso.anio }}{{ libro.materia.curso.division }}_{{ libro.materia.nombre }}".replace(/\s+/g, '_');
+            
+            const options = {
+                margin: [0, 0, 0, 0], // Margins are already handled in the report's padding
+                filename: `${libroNombre}.pdf`.replace(/[<>:"/\\|?*]/g, ''),
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true,
+                    letterRendering: true,
+                    logging: false,
+                    scrollY: 0,
+                    scrollX: 0
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: 'avoid-all' }
+            };
+
+            // Small delay to ensure the browser paints the clone
+            setTimeout(() => {
+                html2pdf().set(options).from(clone).save().then(() => {
+                    document.body.removeChild(container);
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                }).catch(err => {
+                    console.error('Error generating PDF:', err);
+                    if (container.parentNode) document.body.removeChild(container);
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                    alert('Error al generar el PDF.');
+                });
+            }, 150);
+        }
+    </script>
+</body>
+</html>
