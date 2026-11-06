@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter, Depends, Request, Form, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -10,9 +11,18 @@ import os
 
 router = APIRouter()
 
-# Setup templates path
-templates_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
+# Configuración de la ruta de las plantillas
+templates_path = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)),
+    "templates"
+)
+
 templates = Jinja2Templates(directory=templates_path)
+
+
+# ==========================================
+# PÁGINA DE INICIO DE SESIÓN
+# ==========================================
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
@@ -21,6 +31,11 @@ async def login_page(request: Request):
         name="login.html",
         context={"request": request}
     )
+
+
+# ==========================================
+# PROCESO DE AUTENTICACIÓN
+# ==========================================
 
 @router.post("/login")
 async def login(
@@ -31,22 +46,41 @@ async def login(
 ):
     try:
         user = AuthService.authenticate_user(db, email, dni)
-        
-        if not user:
-            return templates.TemplateResponse("components/login_error.html", {
-                "request": request, 
-                "error": "Usuario no válido"
-            })
 
-        # Create token
+        # Validar usuario
+        if not user:
+            return templates.TemplateResponse(
+                request=request,
+                name="components/login_error.html",
+                context={
+                    "request": request,
+                    "error": "Usuario no válido"
+                }
+            )
+
+        # Crear token de acceso
         access_token = create_access_token(
-            data={"user_id": user.id, "email": user.email, "rol": user.rol, "dni": dni}
+            data={
+                "user_id": user.id,
+                "email": user.email,
+                "rol": user.rol,
+                "dni": dni
+            }
         )
 
-        # Redirect based on role
-        redirect_url = "/admin" if user.rol == "admin" else "/dashboard"
-        
-        response = Response(status_code=200, headers={"HX-Redirect": redirect_url})
+        # Redireccionar según el rol del usuario
+        redirect_url = (
+            "/admin"
+            if user.rol == "admin"
+            else "/dashboard"
+        )
+
+        response = Response(
+            status_code=200,
+            headers={"HX-Redirect": redirect_url}
+        )
+
+        # Configurar cookie de autenticación
         response.set_cookie(
             key="access_token",
             value=access_token,
@@ -54,13 +88,23 @@ async def login(
             samesite="lax",
             max_age=3600 * 8
         )
+
         return response
+
     except Exception as e:
-        # If it crashes, show the error in the UI
-        return templates.TemplateResponse("components/login_error.html", {
-            "request": request, 
-            "error": f"Error del sistema: {str(e)}"
-        })
+        return templates.TemplateResponse(
+            request=request,
+            name="components/login_error.html",
+            context={
+                "request": request,
+                "error": f"Error del sistema: {str(e)}"
+            }
+        )
+
+
+# ==========================================
+# CERRAR SESIÓN
+# ==========================================
 
 @router.get("/logout")
 async def logout():
@@ -68,14 +112,46 @@ async def logout():
     response.delete_cookie("access_token")
     return response
 
+
+# ==========================================
+# PANEL DEL DOCENTE
+# ==========================================
+
 @router.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request, user=Depends(get_current_user)):
+async def dashboard(
+    request: Request,
+    user=Depends(get_current_user)
+):
     if not user or user.rol not in ["docente", "autoridad", "admin"]:
         return RedirectResponse(url="/login")
-    return templates.TemplateResponse("dashboard.html", {"request": request, "user": user})
+
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard.html",
+        context={
+            "request": request,
+            "user": user
+        }
+    )
+
+
+# ==========================================
+# PANEL DE ADMINISTRACIÓN
+# ==========================================
 
 @router.get("/admin", response_class=HTMLResponse)
-async def admin_page(request: Request, user=Depends(get_current_user)):
+async def admin_page(
+    request: Request,
+    user=Depends(get_current_user)
+):
     if not user or user.rol != "admin":
         return RedirectResponse(url="/login")
-    return templates.TemplateResponse("admin.html", {"request": request, "user": user})
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin.html",
+        context={
+            "request": request,
+            "user": user
+        }
+    )
